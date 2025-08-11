@@ -1,0 +1,119 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Incident Analyzer Report</title>
+  <style>
+    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; margin: 24px; color: #111827; }
+    h1, h2, h3 { color: #111827; }
+    .kpi { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+    .card { border: 1px solid #E5E7EB; border-radius: 10px; padding: 16px; background: #fff; }
+    .muted { color: #6B7280; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border-bottom: 1px solid #E5E7EB; padding: 8px 12px; text-align: left; }
+    th { background: #F9FAFB; }
+    img.chart { max-width: 100%; height: auto; border: 1px solid #E5E7EB; border-radius: 10px; }
+    .chips span { display: inline-block; margin: 2px 6px 2px 0; padding: 2px 8px; background: #EEF2FF; color: #4338CA; border-radius: 999px; font-size: 12px; }
+    .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; }
+  </style>
+</head>
+<body>
+  <h1>Incident Analyzer Report</h1>
+
+  <div class="kpi">
+    <div class="card">
+      <div class="muted">Total incidents</div>
+      <div style="font-size: 28px; font-weight: 700;">{{ metrics.total_incidents }}</div>
+    </div>
+    <div class="card">
+      <div class="muted">Avg MTTR (min)</div>
+      <div style="font-size: 28px; font-weight: 700;">{{ '%.1f' % metrics.mttr_minutes if metrics.mttr_minutes is not none else '—' }}</div>
+      <div class="muted">p50 {{ '%.1f' % metrics.p50_mttr if metrics.p50_mttr is not none else '—' }} / p90 {{ '%.1f' % metrics.p90_mttr if metrics.p90_mttr is not none else '—' }}</div>
+    </div>
+    <div class="card">
+      <div class="muted">Avg MTTA (min)</div>
+      <div style="font-size: 28px; font-weight: 700;">{{ '%.1f' % metrics.mtta_minutes if metrics.mtta_minutes is not none else '—' }}</div>
+      <div class="muted">p50 {{ '%.1f' % metrics.p50_mtta if metrics.p50_mtta is not none else '—' }} / p90 {{ '%.1f' % metrics.p90_mtta if metrics.p90_mtta is not none else '—' }}</div>
+    </div>
+    <div class="card">
+      <div class="muted">Top keyword</div>
+      <div style="font-size: 28px; font-weight: 700;">{{ (keywords[0][0] if keywords|length>0 else '—') }}</div>
+      <div class="muted">{{ (keywords[0][1] if keywords|length>0 else '') }} mentions</div>
+    </div>
+  </div>
+
+  <h2>Charts</h2>
+  <div class="grid">
+    <div class="card"><img class="chart" src="data:image/png;base64,{{ charts.by_severity }}" /></div>
+    <div class="card"><img class="chart" src="data:image/png;base64,{{ charts.by_service }}" /></div>
+    <div class="card" style="grid-column: span 2 / span 2"><img class="chart" src="data:image/png;base64,{{ charts.weekly }}" /></div>
+  </div>
+
+  <h2>Similar incidents</h2>
+  <div class="card">
+    {% if similar_clusters|length == 0 %}
+      <div class="muted">No clusters detected.</div>
+    {% else %}
+      <ul>
+      {% for cluster in similar_clusters %}
+        <li>Cluster of {{ cluster|length }} incidents (rows: {{ cluster }})</li>
+      {% endfor %}
+      </ul>
+      <div class="muted">Tip: clusters indicate duplicates or recurring issues.</div>
+    {% endif %}
+  </div>
+
+  <h2>Incidents (preview)</h2>
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Severity</th>
+          <th>Service</th>
+          <th>Start</th>
+          <th>Ack</th>
+          <th>End</th>
+          <th>TTF (min)</th>
+          <th>TTR (min)</th>
+          <th>Tags</th>
+          <th>Suggested cause</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for inc in incidents %}
+          <tr>
+            <td><div class="mono" title="{{ inc.description }}">{{ inc.title }}</div></td>
+            <td>{{ inc.severity }}</td>
+            <td>{{ inc.service or '—' }}</td>
+            <td>{{ inc.start_time or '—' }}</td>
+            <td>{{ inc.ack_time or '—' }}</td>
+            <td>{{ inc.end_time or '—' }}</td>
+            <td>{{ '%.1f' % inc.tta_minutes if inc.tta_minutes is not none else '—' }}</td>
+            <td>{{ '%.1f' % inc.ttr_minutes if inc.ttr_minutes is not none else '—' }}</td>
+            <td class="chips">{% for t in inc.tags %}<span>{{ t }}</span>{% endfor %}</td>
+            <td>{{ root_cause_suggestions.get(loop.index0) or '—' }}</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Top keywords</h2>
+  <div class="card">
+    {% if keywords|length == 0 %}
+      <div class="muted">None</div>
+    {% else %}
+      <ol>
+        {% for word, count in keywords %}
+          <li>{{ word }} — {{ count }}</li>
+        {% endfor %}
+      </ol>
+    {% endif %}
+  </div>
+
+  <footer class="muted" style="margin-top: 24px;">Generated by Incident Analyzer</footer>
+</body>
+</html>
