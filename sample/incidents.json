@@ -1,0 +1,52 @@
+{
+  "incidents": [
+    {
+      "id": "INC-1001",
+      "title": "Increased API latency in payments",
+      "description": "Latency spike after deploy. Elevated p95 from 200ms to 2s.",
+      "severity": "P2",
+      "service": "payments",
+      "created_at": "2025-06-01T09:12:00Z",
+      "acknowledged_at": "2025-06-01T09:18:00Z",
+      "resolved_at": "2025-06-01T09:45:00Z",
+      "tags": ["api", "latency", "deploy"],
+      "impact_minutes": 33
+    },
+    {
+      "id": "INC-1002",
+      "title": "Checkout errors due to DB connection timeout",
+      "description": "Intermittent 500s. DB pool saturated. Timeouts at 5s.",
+      "severity": "P1",
+      "service": "checkout",
+      "created_at": "2025-06-03T14:02:00Z",
+      "acknowledged_at": "2025-06-03T14:06:00Z",
+      "resolved_at": "2025-06-03T14:30:00Z",
+      "tags": ["db", "timeout"],
+      "impact_minutes": 28
+    },
+    {
+      "id": "INC-1003",
+      "title": "Cache cluster miss storm",
+      "description": "Redis miss rate > 80% post feature flag. High CPU.",
+      "severity": "high",
+      "service": "catalog",
+      "created_at": "2025-06-04T08:40:00Z",
+      "acknowledged_at": "2025-06-04T08:47:00Z",
+      "resolved_at": "2025-06-04T09:20:00Z",
+      "tags": ["cache", "redis", "feature flag"],
+      "impact_minutes": 40
+    },
+    {
+      "id": "INC-1004",
+      "title": "Increased API latency in Payments",
+      "description": "Similar to INC-1001. Rollback mitigated.",
+      "severity": "P2",
+      "service": "payments",
+      "created_at": "2025-06-08T10:10:00Z",
+      "acknowledged_at": "2025-06-08T10:15:00Z",
+      "resolved_at": "2025-06-08T10:40:00Z",
+      "tags": ["api", "latency"],
+      "impact_minutes": 25
+    }
+  ]
+}
